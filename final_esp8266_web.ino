@@ -9,8 +9,8 @@
  */
 #include <ESP8266WiFi.h>
 
-const char* ssid = "0045167901";
-const char* password = "d2437369be";
+const char* ssid = "Put your SSID here";
+const char* password = "Put your wifi password here";
 bool sentText=false;
 long timer1=millis();
 int interval=10000;
