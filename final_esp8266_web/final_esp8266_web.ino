@@ -1,16 +1,17 @@
 /*
  * 
- * Serial print messages to arduino.
+ * The ESP8266 Connects to your wifi
  * Start web server on port 80
  * First send IP untill the web page is access
  * then send the information posted in web page.
+ * Serially to Arduino
  * 
  * Have fun!!
  */
 #include <ESP8266WiFi.h>
 
-const char* ssid = "Put your SSID here";
-const char* password = "Put your wifi password here";
+const char* ssid = "Put your WIFI SSID here";
+const char* password = "Your Password Here";
 bool sentText=false;
 long timer1=millis();
 int interval=10000;
@@ -92,8 +93,6 @@ void loop(void)
   String s;
   //if the web page has a ? in it then its a post with the text.
   if (req.indexOf('?')>0) {
-    s="HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html><body>";
-    s+="<br>Sending...";
     answer=req.substring(req.indexOf('=')+1);
     answer.replace('+',' ');
     //Conver HTML URL Encode to Text:
@@ -126,9 +125,11 @@ void loop(void)
     answer.replace("%7B","\{");
     answer.replace("%7C","\|");
     answer.replace("%7D","\}");
+    s="HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html><body>";
+    s+="<br>Sending the text <b>\"";
     s+=answer;
-    s+=" to the 7219 Led matrix!";
-    s+"</body></html>\r\n\r\n";
+    s+="\"</b> to the 7219 Led matrix!";
+    s+="<p><a href='./'>Back</a></p></body></html>\r\n\r\n";
     client.print(s);
     Serial.println(answer);
     //set the sentText as true if the user entered wed information.
