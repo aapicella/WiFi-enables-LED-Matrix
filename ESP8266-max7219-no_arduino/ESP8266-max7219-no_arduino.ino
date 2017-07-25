@@ -134,13 +134,16 @@ unsigned long intro=millis();
 IPAddress ip ;
   
 void setup() {
+  //Initialize the display  
+    lmd.setEnabled(true);  
+    lmd.setIntensity(2);   // 0 = low, 10 = high  
+    sprintf(text,"Connecting to %s",ssid);  
+    len=strlen(text);
   // Connect to WiFi network
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-  }
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+      displayText(text);    
+      delay(ANIM_DELAY);
   }
    // Start TCP (HTTP) server
   server.begin();
@@ -148,9 +151,7 @@ void setup() {
   String ipStr = String(ip[0]) + '.' + String(ip[1]) + '.' + String(ip[2]) + '.' + String(ip[3]);
   strcpy(text, ipStr.c_str());
   len=strlen(text);
-  // init the display
-  lmd.setEnabled(true);
-  lmd.setIntensity(2);   // 0 = low, 10 = high  
+   
 }
 
 
