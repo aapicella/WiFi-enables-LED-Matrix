@@ -1,22 +1,39 @@
+/*
+ * Original project by aapicella.
+ * https://github.com/aapicella/WiFi-enables-LED-Matrix
+ * https://www.instructables.com/id/WIFI-Enabled-LED-Matrix/
+ */
+
 #include <LEDMatrixDriver.hpp>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 
-const char* ssid = "<PUT YOUR SSID HERE>";
-const char* password = "<PUT YOUR WIFI PASSWORD HERE>";
-// TCP server at port 80 will respond to HTTP requests
-WiFiServer server(80);
+/*----------------------------system----------------------------*/
+const String _progName = "";
+const String _progVers = "0.1"; // Converting to Wemos D1 Mini Pro
 
+/*-----------------------------WIFI-----------------------------*/
+const char* ssid = "";
+const char* password = "";
+WiFiServer server(80);  // TCP server at port 80 will respond to HTTP requests
 
 /*
  * ESP8266 pins need wired are below:
  * DIN (data in) on Matrix ---> 13 or MOSI on ESP8266
- * Clock(CLK) on Matrix --> 14 or SCK on ESP8266
  * CS pin on Matrix define below  --->( pick 15 on esp8266)
+ * Clock(CLK) on Matrix --> 14 or SCK on ESP8266
  */
-const uint8_t LEDMATRIX_CS_PIN = 15;
+ 
+/*
+ * Max7219 to Wemos D1 Mini Pro
+ * DIN to D7 (GPIO 13)
+ * CS to D6 (GPIO 12)
+ * CLK to D5 (GPIO 14)
+ */
 
-// Define LED Matrix dimensions (0-n) - eg: 32x8 = 31x7
+const uint8_t LEDMATRIX_CS_PIN = 12;
+
+// Define LED Matrix dimensions (0-n) - eg: 32x8 = 31x7 (4 8x8 blocks)
 const int LEDMATRIX_WIDTH = 31;  
 const int LEDMATRIX_HEIGHT = 7;
 const int LEDMATRIX_SEGMENTS = 4;
@@ -133,45 +150,45 @@ unsigned long myTime=millis();
 unsigned long intro=millis();
 IPAddress ip ;
   
-void setup() {
+void setup() 
+{
   //Initialize the display  
-    lmd.setEnabled(true);  
-    lmd.setIntensity(2);   // 0 = low, 10 = high  
-    sprintf(text,"Connecting to %s",ssid);  
-    len=strlen(text);
+  lmd.setEnabled(true);
+  lmd.setIntensity(2);  // 0 = low, 10 = high  
+  sprintf(text,"Connecting to %s",ssid);
+  len=strlen(text);
   // Connect to WiFi network
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-      displayText(text);    
-      delay(ANIM_DELAY);
+  while (WiFi.status() != WL_CONNECTED) 
+  {
+    displayText(text);
+    delay(ANIM_DELAY);
   }
-   // Start TCP (HTTP) server
+  // Start TCP (HTTP) server
   server.begin();
   ip = WiFi.localIP();
   String ipStr = String(ip[0]) + '.' + String(ip[1]) + '.' + String(ip[2]) + '.' + String(ip[3]);
   strcpy(text, ipStr.c_str());
   len=strlen(text);
-   
 }
-
-
 
 void loop() 
 {
-  
-   displayText(text);
+  displayText(text);
   // Check if a client has connected
   WiFiClient client = server.available();
-  if (!client) {
+  if (!client) 
+  {
     return;
   }
- 
+
   // Wait for data from client to become available
-  while(client.connected() && !client.available()){
+  while(client.connected() && !client.available()) 
+  {
     displayText(text);
     delay(1);
   }
-  
+
   // Read the first line of HTTP request
   String req = client.readStringUntil('\r');
   
@@ -179,7 +196,8 @@ void loop()
   // Retrieve the "/path" part by finding the spaces
   int addr_start = req.indexOf(' ');
   int addr_end = req.indexOf(' ', addr_start + 1);
-  if (addr_start == -1 || addr_end == -1) {
+  if (addr_start == -1 || addr_end == -1) 
+  {
     return;
   }
   req = req.substring(addr_start + 1, addr_end);
@@ -188,11 +206,10 @@ void loop()
   String s;
   String answer;
   int pos;
-  if (req.indexOf('?')>0) {
-
-    
-     //Change url tags to text
-     answer=req.substring(req.indexOf('=')+1);
+  if (req.indexOf('?')>0) 
+  {
+    //Change url tags to text
+    answer=req.substring(req.indexOf('=')+1);
     answer.replace('+',' ');
     //Conver HTML URL Encode to Text:
     //https://www.w3schools.com/tags/ref_urlencode.asp
@@ -224,12 +241,12 @@ void loop()
     answer.replace("%7B","\{");
     answer.replace("%7C","\|");
     answer.replace("%7D","\}");
-     
-      strcpy(text, answer.c_str());
-      len=strlen(text);
-      x=LEDMATRIX_WIDTH;
+
+    strcpy(text, answer.c_str());
+    len=strlen(text);
+    x=LEDMATRIX_WIDTH;
     lmd.clear();
-    
+
     //Serial.println(req.substring(req.indexOf('=')+1));
     s="HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML><style> #header{ min-height: 20px; background-color: #666699; } #menu{ min-height: 20px; margin-top: 1%; background-color: #999999; } #body{ min-height: 200px; margin-top: 1%; } #footer{ min-height: 20px; margin-top: 1%; background-color: #666699; } #header, #menu, #body, #footer{ margin-left: 10%; margin-right: 10%; box-shadow: 3px 5px 7px #666666; border: 1px solid black; } @viewport{ zoom: 1.0; width: extend-to-zoom; } @-ms-viewport{ width: extend-to-zoom; zoom: 1.0; } </style> <html lang='en'> <head> <meta name='viewport' content='width=device-width, initial-scale=1'> <title>ESP8266 Web Server</title> </head> <body> <div id='header'><center><h1>Welcome to the ESP8266 Web Server</H1></center></div>";
     s+=" <div id='menu'><center><H2>Printing to the 4 - 8x8 Matrix</h2></center></div> ";
@@ -241,88 +258,13 @@ void loop()
     s+"</body></html>\r\n\r\n";
     client.print(s);
     return;
-  }  
+  }
   else
   {
-    
     s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
     s+="<!doctype html> <style> \#header{ min-height: 20px; background-color: \#666699; } \#menu{ min-height: 20px; margin-top: 1%; background-color: \#999999; } \#body{ min-height: 200px; margin-top: 1%; } \#footer{ min-height: 20px; margin-top: 1%; background-color: \#666699; } \#header, \#menu, \#body, \#footer{ margin-left: 10%; margin-right: 10%; box-shadow: 3px 5px 7px \#666666; border: 1px solid black; } @viewport{ zoom: 1.0; width: extend-to-zoom; } @-ms-viewport{ width: extend-to-zoom; zoom: 1.0; } </style> <html lang='en'> <head> <meta name='viewport' content='width=device-width, initial-scale=1'> <title>ESP8266 Web Server</title> </head> <body> <div id='header'><center><h1>Welcome to the ESP8266 Web Server</H1></center></div> <div id='menu'><center><H2>Enter text which will be displayed on a 4 - 8x8 led matrix</h2></center></div> <div id='body'><center><div><div><br> <form action='esp8266'> <br>Enter Text to display on LED Matrix:<br><input type='text' maxlength='70' name='max' value=''><br><br> <input type='submit' value='Submit'></form> </div></div> </center> </div> <div id='footer'> </div> </body>";
     s += "</html>\r\n\r\n";
     client.print(s);
-   return;
-  }
-     
-}
-
-/* This function is called in loop but 
- *  only does stuff when animimation delay
- *  is met. 
- *  
- *  This will allow loop to do other thing instead
- *  of waiting for a delay to happen.
- *  
- *  Delay=bad programming.
- */
-void displayText ( char * theText)
-{
-   if ( myTime + ANIM_DELAY < millis()) 
-   {
-        myTime=millis();
-        // Draw the text to the current position
-        drawString(theText, len, x, 0);
-        // In case you wonder why we don't have to call lmd.clear() in every loop: The font has a opaque (black) background... 
-        // Toggle display of the new framebuffer
-        lmd.display();  
-        // Advance to next coordinate
-        if( --x < len * -8 )
-        {
-            x = LEDMATRIX_WIDTH;
-            lmd.clear();
-        }
-   }  
-}
-
-/**
- * This function draws a string of the given length to the given position.
- */
-void drawString(char* text, int len, int x, int y )
-{
-  
-  for( int idx = 0; idx < len; idx ++ )
-  {
-    int c = text[idx] - 32;
-
-    // stop if char is outside visible area
-    if( x + idx * 8  > LEDMATRIX_WIDTH )
-      return;
-
-    // only draw if char is visible
-    if( 8 + x + idx * 8 > 0 )
-      drawSprite( font[c], x + idx * 8, y, 8, 8 );
-  }
-}
-
-/**
- * This draws a sprite to the given position using the width and height supplied (usually 8x8)
- */
-void drawSprite( byte* sprite, int x, int y, int width, int height )
-{
-  // The mask is used to get the column bit from the sprite row
-  byte mask = B10000000;
-  
-  for( int iy = 0; iy < height; iy++ )
-  {
-    for( int ix = 0; ix < width; ix++ )
-    {
-      //Yes my font is backwards so I swap it around.
-      //lmd.setPixel(x + ix, y + iy, (bool)(sprite[iy] & mask ));
-        lmd.setPixel(x + (width - ix), y + iy, (bool)(sprite[iy] & mask ));
-
-      // shift the mask by one pixel to the right
-      mask = mask >> 1;
-    }
-
-    // reset column mask
-    mask = B10000000;
+    return;
   }
 }
