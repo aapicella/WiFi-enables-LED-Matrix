@@ -11,8 +11,6 @@
  
 #include <WiFiManager.h>                  // https://github.com/tzapu/WiFiManager - web page @ 192.168.4.1
 #include <SPI.h>
-//#include <ESP8266WiFi.h>                // included in tzapu WIFI Manager
-//#include <WiFiClient.h>                 // included in tzapu WIFI Manager
 #include <MD_MAX72xx.h>
 
 /*----------------------------system----------------------------*/

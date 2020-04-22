@@ -5,6 +5,11 @@ Hardware used:
 - Wemos D1 Mini Pro (ESP8266)
 - Max7219 LED matrix
 
+Libraries used:
+- https://github.com/esp8266/Arduino
+- https://github.com/MajicDesigns/MD_MAX72XX
+- https://github.com/tzapu/WiFiManager
+
 Originally based on project by aapicella.
 - https://github.com/aapicella/WiFi-enables-LED-Matrix
 - https://www.instructables.com/id/WIFI-Enabled-LED-Matrix/
