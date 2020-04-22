@@ -1,5 +1,6 @@
 /*----------------------------message---------------------------*/
-void webMessage() {
+void webMessage() 
+{
   // Check if a client has connected
   WiFiClient client = _server.available();
   if (!client) 

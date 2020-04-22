@@ -21,10 +21,12 @@
  * (1 << (bit))
  */
 #include <DS3231_Simple.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
 
 /*----------------------------system----------------------------*/
 const String _progName = "ClockMessageBox";
-const String _progVers = "0.4";           // Added DS3231 Clock
+const String _progVers = "0.5";           // Added NTP request
 #define DEBUG 1                           // 0 or 1 - remove later
 
 /*----------------------------pins------------------------------*/
@@ -57,7 +59,16 @@ const int LEDMATRIX_WIDTH = 31;
 int x = LEDMATRIX_WIDTH, y=0;             // start top left
 
 /*----------------------------DS3231----------------------------*/
- DS3231_Simple Clock;
+ DS3231_Simple _clock;
+ 
+/*----------------------------NTP-------------------------------*/
+WiFiUDP _ntpUDP;
+//NTPClient _timeClient(_ntpUDP);
+NTPClient _timeClient(_ntpUDP, "europe.pool.ntp.org");  // specifically picking europe region
+//NTPClient _timeClient(_ntpUDP, "pool.ntp.org"); // automatically picks sub-region
+//NTPClient _timeClient(_ntpUDP, "time.nist.gov");
+char _daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+String _months[12]={"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
 /*----------------------------values----------------------------*/
 char _text[75] = " Hello ";               // Marquee text
@@ -73,8 +84,8 @@ void setup()
     Serial.println();
   }
   
-  Clock.begin();
-  _mx.begin();                            // Initialize the display
+  _clock.begin();                         // Initialise the DS3231 clock
+  _mx.begin();                            // Initialise the display
   displayText(_text);
   
   setupWifiManager();
@@ -89,18 +100,20 @@ void setup()
   //}
 
   if (_wifiAvailable) {
+    updateTimeDate();
     setupServer();
   }
 }
 
 void loop() 
 {
+  readTime();
   displayText(_text);
 
   if (DEBUG) {
-    Clock.printDateTo_YMD(Serial);
+    _clock.printDateTo_YMD(Serial);
     Serial.print(' ');
-    Clock.printTimeTo_HMS(Serial);
+    _clock.printTimeTo_HMS(Serial);
     Serial.println();
   }
 

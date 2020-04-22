@@ -11,6 +11,7 @@ Libraries used:
 - https://github.com/MajicDesigns/MD_MAX72XX
 - https://github.com/tzapu/WiFiManager
 - https://github.com/sleemanj/DS3231_Simple
+- https://github.com/arduino-libraries/NTPClient
 
 Originally based on project by aapicella.
 - https://github.com/aapicella/WiFi-enables-LED-Matrix

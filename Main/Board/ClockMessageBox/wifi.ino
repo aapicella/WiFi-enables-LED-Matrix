@@ -1,5 +1,6 @@
 /*----------------------------wifi------------------------------*/
-void setupWifiManager() {
+void setupWifiManager() 
+{
   //WiFiManager, Local intialization. Once its business is done, there is no need to keep it around
   WiFiManager wm;
   
@@ -29,7 +30,8 @@ void setupWifiManager() {
   }
 }
 
-void setupServer() {
+void setupServer() 
+{
   // Start TCP (HTTP) server
   _server.begin();
   _ip = WiFi.localIP();
