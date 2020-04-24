@@ -16,3 +16,6 @@ Libraries used:
 Originally based on project by aapicella.
 - https://github.com/aapicella/WiFi-enables-LED-Matrix
 - https://www.instructables.com/id/WIFI-Enabled-LED-Matrix/
+
+TODO:
+- Implement daylight savings time adjustment

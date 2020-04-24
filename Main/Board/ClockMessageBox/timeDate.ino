@@ -1,23 +1,10 @@
 /*----------------------------timeDate--------------------------*/
 
-/* BST begins at 01:00 GMT on the last Sunday of March and 
- * ends at 01:00 GMT (02:00 BST) on the last Sunday of October.
- * https://en.wikipedia.org/wiki/British_Summer_Time
- * 
- * 2020 29 March 25 October
- * 2021 28 March 31 October
- * 2022 27 March 30 October
- * 2023 26 March 29 October
- */
-
 void updateTimeDate() 
 {  
   _timeClient.begin();                  // Initialise the NTP client
   _timeClient.setTimeOffset(0);
   _timeClient.update();
-
-  // Create a variable to hold the data 
-  DateTime MyTimestamp;
 
   unsigned long epochTime = _timeClient.getEpochTime();
   //Get a time structure
@@ -37,19 +24,10 @@ void updateTimeDate()
   int currentMonth = ptm->tm_mon+1;
   String currentMonthName = _months[currentMonth-1];
   int currentYear = ptm->tm_year+1900;
+  int yr = currentYear-2000;
   
-  // Load it with the date and time you want to set, for example
-  //   Saturday the 3rd of October 2020 at 14:17 and 33 Seconds...
-  MyTimestamp.Day    = _timeClient.getDay();
-  MyTimestamp.Month  = currentMonth;
-  MyTimestamp.Year   = currentYear-2000; 
-  MyTimestamp.Hour   = _timeClient.getHours();
-  MyTimestamp.Minute = _timeClient.getMinutes();
-  MyTimestamp.Second = _timeClient.getSeconds();
+  saveTime(_timeClient.getDay(), currentMonth, yr, _timeClient.getHours(), _timeClient.getMinutes(), _timeClient.getSeconds());
   
-  // Then write it to the clock
-  _clock.write(MyTimestamp);
-
   if (DEBUG) {
     // And use it, we will read it back for example...  
     Serial.print("The time has been set to: ");
@@ -80,6 +58,24 @@ void updateTimeDate()
   }
 }
 
+void saveTime(int d, int mo, int yr, int hr, int m, int s)
+{
+  // Create a variable to hold the data 
+  DateTime MyTimestamp;
+
+  // Load it with the date and time you want to set, for example
+  //   Saturday the 3rd of October 2020 at 14:17 and 33 Seconds...
+  MyTimestamp.Day    = d;
+  MyTimestamp.Month  = mo;
+  MyTimestamp.Year   = yr; 
+  MyTimestamp.Hour   = hr;
+  MyTimestamp.Minute = m;
+  MyTimestamp.Second = s;
+  
+  // Then write it to the clock
+  _clock.write(MyTimestamp);
+}
+
 void readTime() 
 {
   // Create a variable to hold the data 
@@ -88,7 +84,14 @@ void readTime()
   // Ask the clock for the data.
   MyTimestamp = _clock.read();
 
-  String timeString = String(MyTimestamp.Hour) + ":" + String(MyTimestamp.Minute) + ":" + String(MyTimestamp.Second);
+//  checkDst(MyTimestamp);
+
+//  int hr = MyTimestamp.Hour;
+//  if (daylightSavings == 1) {
+//    hr = hr + 1;
+//  }
+
+  String timeString = String(hr) + ":" + String(MyTimestamp.Minute) + ":" + String(MyTimestamp.Second);
   strcpy(_text, timeString.c_str());
   _length=strlen(_text);
 

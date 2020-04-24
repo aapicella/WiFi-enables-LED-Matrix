@@ -26,7 +26,7 @@
 
 /*----------------------------system----------------------------*/
 const String _progName = "ClockMessageBox";
-const String _progVers = "0.5";           // Added NTP request
+const String _progVers = "0.6";           // Trying to implement daylight savings
 #define DEBUG 1                           // 0 or 1 - remove later
 
 /*----------------------------pins------------------------------*/
@@ -69,6 +69,7 @@ NTPClient _timeClient(_ntpUDP, "europe.pool.ntp.org");  // specifically picking 
 //NTPClient _timeClient(_ntpUDP, "time.nist.gov");
 char _daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 String _months[12]={"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+int daylightSavings = 0;  // DST flag
 
 /*----------------------------values----------------------------*/
 char _text[75] = " Hello ";               // Marquee text
@@ -107,7 +108,7 @@ void setup()
 
 void loop() 
 {
-  readTime();
+  readTime();         // can i do this every loop ?
   displayText(_text);
 
   if (DEBUG) {
