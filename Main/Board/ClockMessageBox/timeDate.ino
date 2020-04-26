@@ -86,10 +86,10 @@ void readTime()
 
 //  checkDst(MyTimestamp);
 
-//  int hr = MyTimestamp.Hour;
-//  if (daylightSavings == 1) {
-//    hr = hr + 1;
-//  }
+  int hr = MyTimestamp.Hour;
+  if (daylightSavings == 1) {
+    hr = hr + 1;
+  }
 
   String timeString = String(hr) + ":" + String(MyTimestamp.Minute) + ":" + String(MyTimestamp.Second);
   strcpy(_text, timeString.c_str());

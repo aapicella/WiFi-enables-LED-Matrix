@@ -1,0 +1,9 @@
+8x8 LED Matrix (all on at half brightness) approx 240mA
+5 x Matrices approx 1.2A
+
+Wemos D1 Mini Pro (peak pull with Wifi) approx 250mA
+
+DS3231 approx 300uA
+
+Touch IC TTP223-BA6 (init Toggle Mode, Power on state = 0)
+

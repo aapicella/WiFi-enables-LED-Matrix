@@ -83,6 +83,8 @@ void webMessage()
     //s+=req.substring(req.indexOf('=')+1);
     s+"</body></html>\r\n\r\n";
     client.print(s);
+    msgActive = true;
+    if (DEBUG) { Serial.println(_text); }
     return;
   }
   else
@@ -92,5 +94,14 @@ void webMessage()
     s += "</html>\r\n\r\n";
     client.print(s);
     return;
+  }
+}
+
+void checkMsgCancelBt() 
+{
+  int val = digitalRead(BT_PIN);            // Read the input button pin
+  if (val == 0) {
+    msgActive = false;    // cancel message
+    if (DEBUG) { Serial.println("Message canceled"); }
   }
 }
