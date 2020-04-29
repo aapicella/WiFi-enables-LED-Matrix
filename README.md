@@ -33,7 +33,7 @@ When successfull the Clock Message Box will save the connection and (attempt to)
 On power-up the Clock Message Box will display the IP it has been assigned.   
 Open browser and goto that IP to send the box messages.  
 
-( To display the IP again touch the front button. )
-( To clear a message touch the front button. )
-( Message will timeout and revert to clock (currently) after 1 hour. )  
+( To display the IP again touch the front button. )  
+( To clear a message touch the front button. )  
+( Message will timeout and revert to clock (currently) after 1 hour. )   
 
