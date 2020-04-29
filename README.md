@@ -21,17 +21,17 @@ TODO:
 - Implement daylight savings time adjustment
 
 Setup of device:
-Power on. 
-Connect your phone/tablet/computer to Wifi device "ClockMessageBox". 
-Connection password is "password".
-When successfull open browser and goto 192.168.4.1 
-Select the Wifi device you want it connected to (probably your home router).
-Enter the password for that device.
-Read the instructions on the page to tell if it was successfull or not. 
-If not repeat. 
-When successfull the Clock Message Box will save the connection and (attempt to) automatically connect to this every time it powers on. 
-On power-up the Clock Message Box will display the IP it has been assigned. 
-Open browser and goto that IP to send the box messages. 
+Power on.  
+Connect your phone/tablet/computer to Wifi device "ClockMessageBox".  
+Connection password is "password".  
+When successfull open browser and goto 192.168.4.1   
+Select the Wifi device you want it connected to (probably your home router).  
+Enter the password for that device.  
+Read the instructions on the page to tell if it was successfull or not.   
+If not repeat.   
+When successfull the Clock Message Box will save the connection and (attempt to) automatically connect to this every time it powers on.   
+On power-up the Clock Message Box will display the IP it has been assigned.   
+Open browser and goto that IP to send the box messages.  
 
 ( To display the IP again touch the front button. )
 ( To clear a message touch the front button. )
