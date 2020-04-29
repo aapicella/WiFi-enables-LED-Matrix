@@ -28,6 +28,7 @@
  
 #include <WiFiManager.h>                  // https://github.com/tzapu/WiFiManager - web page @ 192.168.4.1
 #include <SPI.h>
+#include <MD_Parola.h>
 #include <MD_MAX72xx.h>
 /* 
  *  _BV(bit) is a macro defined in  avr/io.h file in AVR libraries.
@@ -42,7 +43,7 @@
 
 /*----------------------------system----------------------------*/
 const String _progName = "ClockMessageBox";
-const String _progVers = "0.75";          // Cancel message button cleanup
+const String _progVers = "0.8";           // Added MD_Parola library
 #define DEBUG 1                           // 0 or 1 - remove later
 // Remember to change DST flag back to init 0 when daylight savings is working!
 
@@ -77,34 +78,39 @@ int _msgTimeoutNextHr = 0;                // Message timeout saved hour to clear
 int _msgTimeoutNextMin = 0;               // Message timeout saved minute to clear msg
 
 /*----------------------------LED Matrix------------------------*/
-#define HARDWARE_TYPE MD_MAX72XX::GENERIC_HW  // PAROLA_HW
+#define HARDWARE_TYPE MD_MAX72XX::GENERIC_HW 
 #define MAX_DEVICES 5
-MD_MAX72XX _mx = MD_MAX72XX(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
+MD_Parola _p = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
 // Define LED Matrix dimensions (0-n) - eg: 32x8 = 31x7 (4 8x8 blocks)
 const int LEDMATRIX_WIDTH = 31;  
-//const int LEDMATRIX_HEIGHT = 7;
-//const int LEDMATRIX_SEGMENTS = 4;
 int x = LEDMATRIX_WIDTH, y=0;             // start top left
+
+//Parola
+uint8_t _intensity = 6;                   // 0-15
+#define SPEED_TIME  25
+#define PAUSE_TIME  1000
+uint8_t _frameDelay = 25;                  // default frame delay value
+textEffect_t _effect[] = { PA_PRINT, PA_SCROLL_LEFT, };
+textPosition_t _textAlign[] = { PA_CENTER, PA_LEFT, };
+
+#define BUF_SIZE  512
+char _text[BUF_SIZE] = " Hello ";         // Marquee text
+int _length = strlen(_text); 
+const int _animDelay = 100; //75;         // frameDelay ???
 
 /*----------------------------DS3231----------------------------*/
  DS3231_Simple _clock;
  
 /*----------------------------NTP-------------------------------*/
 WiFiUDP _ntpUDP;
-//NTPClient _timeClient(_ntpUDP);
 NTPClient _timeClient(_ntpUDP, "europe.pool.ntp.org");  // specifically picking europe region
-//NTPClient _timeClient(_ntpUDP, "pool.ntp.org"); // automatically picks sub-region
-//NTPClient _timeClient(_ntpUDP, "time.nist.gov");
 char _daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 String _months[12]={"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 int daylightSavings = 1;  // DST flag   ..TEMP 1 - should be 0
 
 /*----------------------------values----------------------------*/
-char _text[75] = " Hello ";               // Marquee text
-int _length = strlen(_text);
-const int _animDelay = 100; //75;
-//unsigned long _myTime=millis();
+//const int _animDelay = 100; //75;
 
   
 void setup() 
@@ -125,20 +131,19 @@ void setup()
   //pinMode(BT_PIN, INPUT_PULLUP);          // Set button pin as input with pullup
   
   _clock.begin();                         // Initialise the DS3231 clock
-  _mx.begin();                            // Initialise the display
-  displayText(_text);
+  
+  _p.begin();                             // Initialise the display
+  _p.setIntensity(_intensity);                      
+  _p.setInvert(false);
+  _p.displaySuspend(false);
+  _p.setSpeed(_frameDelay);
+  _p.displayClear();
+
+  //displayText(_text);
+  _p.displayText(_text, _textAlign[0], SPEED_TIME, PAUSE_TIME, _effect[0], PA_NO_EFFECT); // center, print
   
   setupWifiManager();
   
-  //sprintf(_text,"Connecting to %s",ssid);
-  //_length=strlen(_text);
-  // Connect to WiFi network
-  //WiFi.begin(ssid, password);
-  //while (WiFi.status() != WL_CONNECTED) {
-  //  displayText(_text);
-  //  delay(_animDelay);
-  //}
-
   if (_wifiAvailable) 
   {
     updateTimeDate();

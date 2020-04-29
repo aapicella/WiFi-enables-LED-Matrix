@@ -11,7 +11,8 @@ void webMessage()
   // Wait for data from client to become available
   while(client.connected() && !client.available()) 
   {
-    displayText(_text);
+    displayText(_text);     // mabye comment this out ???
+    //_p.displayText(_text);
     delay(1);
   }
 
@@ -71,7 +72,7 @@ void webMessage()
     strcpy(_text, answer.c_str());
     _length=strlen(_text);
     x=LEDMATRIX_WIDTH;
-    _mx.clear();
+    //_mx.clear();
 
     //Serial.println(req.substring(req.indexOf('=')+1));
     s="HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML><style> #header{ min-height: 20px; background-color: #666699; } #menu{ min-height: 20px; margin-top: 1%; background-color: #999999; } #body{ min-height: 200px; margin-top: 1%; } #footer{ min-height: 20px; margin-top: 1%; background-color: #666699; } #header, #menu, #body, #footer{ margin-left: 10%; margin-right: 10%; box-shadow: 3px 5px 7px #666666; border: 1px solid black; } @viewport{ zoom: 1.0; width: extend-to-zoom; } @-ms-viewport{ width: extend-to-zoom; zoom: 1.0; } </style> <html lang='en'> <head> <meta name='viewport' content='width=device-width, initial-scale=1'> <title>Clock Message Box Web Server</title> </head> <body> <div id='header'><center><h1>Welcome to the Clock Message Box Web Server</H1></center></div>";
