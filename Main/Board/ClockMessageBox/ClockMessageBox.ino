@@ -25,7 +25,6 @@
     https://github.com/aapicella/WiFi-enables-LED-Matrix
     https://www.instructables.com/id/WIFI-Enabled-LED-Matrix/
 */
-
  
 #include <WiFiManager.h>                  // https://github.com/tzapu/WiFiManager - web page @ 192.168.4.1
 #include <SPI.h>
@@ -43,17 +42,20 @@
 
 /*----------------------------system----------------------------*/
 const String _progName = "ClockMessageBox";
-const String _progVers = "0.7";           // Implement cancel message button
+const String _progVers = "0.75";          // Cancel message button cleanup
 #define DEBUG 1                           // 0 or 1 - remove later
+// Remember to change DST flag back to init 0 when daylight savings is working!
 
 /*----------------------------pins------------------------------*/
 // Max7219 to Wemos D1 Mini Pro (SPI - Serial) - 5V
-#define DATA_PIN  13                      // DIN to D7 (MOSI - GPIO 13)
-#define CS_PIN    12                      // CS  to D6 (MISO - GPIO 12)
-#define CLK_PIN   14                      // CLK to D5 (SCLK - GPIO 14)
+#define DATA_PIN  13                      // DIN to D7 (MOSI - GPIO 13) orange
+#define CS_PIN    12                      // CS  to D6 (MISO - GPIO 12) yellow
+#define CLK_PIN   14                      // CLK to D5 (SCLK - GPIO 14) green
 // DS3231 Clock to Wemos D1 Mini Pro (I2C) - 5V
-#define SCL_PIN   5                       // SCL to D1 (GPIO5)
-#define SDA_PIN   4                       // SDA to D2 (GPIO4)
+// ground = orange
+// +3.3v = red
+#define SCL_PIN   5                       // SCL to D1 (GPIO5) green
+#define SDA_PIN   4                       // SDA to D2 (GPIO4) yellow
 // button
 // D3 and D4 have internal 10k pullups. Connect straight to ground. Set INPUT_PULLUP ???
 #define BT_PIN    0                       // BT  to D3 (GPIO0)
@@ -68,11 +70,15 @@ bool _wifiAvailable = false;              // Is wifi available for use?
 /*-----------------------------WIFI Manager---------------------*/
 const char* _apName = "ClockMessageBox";
 const char* _apPassword = "password";
-volatile boolean msgActive = false;        // Is the message currently being shown?
+volatile boolean _msgActive = false;      // Is the message currently being shown?
+int _msgTimeoutHr = 1;                    // Message timeout in hours - Change this!
+//int _msgTimeoutMin = 0;                   // Message timeout in minutes - not in use
+int _msgTimeoutNextHr = 0;                // Message timeout saved hour to clear msg 
+int _msgTimeoutNextMin = 0;               // Message timeout saved minute to clear msg
 
 /*----------------------------LED Matrix------------------------*/
 #define HARDWARE_TYPE MD_MAX72XX::GENERIC_HW  // PAROLA_HW
-#define MAX_DEVICES 2
+#define MAX_DEVICES 5
 MD_MAX72XX _mx = MD_MAX72XX(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 
 // Define LED Matrix dimensions (0-n) - eg: 32x8 = 31x7 (4 8x8 blocks)
@@ -116,7 +122,7 @@ void setup()
   }
 
   pinMode(BT_PIN, INPUT);                 // Set button pin as input
-  //pinMode(BT_PIN, INPUT_PULLUP);                 // Set button pin as input with pullup
+  //pinMode(BT_PIN, INPUT_PULLUP);          // Set button pin as input with pullup
   
   _clock.begin();                         // Initialise the DS3231 clock
   _mx.begin();                            // Initialise the display
@@ -138,15 +144,13 @@ void setup()
     updateTimeDate();
     setupServer();
   }
+  delay(1);
 }
 
 void loop() 
 {
-  if (msgActive == true) {
-    checkMsgCancelBt();
-  } else {
-    readTime();         // can i do this every loop ?
-  }
+  _msgActive = false;                     // TEMP - remove when button attached
+  readTime();                           // can i do this every loop ?
   
   displayText(_text);
 

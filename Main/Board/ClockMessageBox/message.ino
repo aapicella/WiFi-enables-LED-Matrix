@@ -83,8 +83,16 @@ void webMessage()
     //s+=req.substring(req.indexOf('=')+1);
     s+"</body></html>\r\n\r\n";
     client.print(s);
-    msgActive = true;
-    if (DEBUG) { Serial.println(_text); }
+
+    // Set timeout for when message clears and reverts back to being a clock.
+    DateTime MyTimestamp;                 // Create a variable to hold the data 
+    MyTimestamp = getTime();              // Get the time
+    _msgTimeoutNextHr = MyTimestamp.Hour + _msgTimeoutHr; // The hour at which to revert
+    _msgTimeoutNextMin = MyTimestamp.Minute;            // The minute at which to revert
+    
+    _msgActive = true;
+    
+    if (DEBUG) { Serial.println("Message active"); Serial.println(_text); }
     return;
   }
   else
@@ -99,9 +107,9 @@ void webMessage()
 
 void checkMsgCancelBt() 
 {
-  int val = digitalRead(BT_PIN);            // Read the input button pin
+  int val = digitalRead(BT_PIN);          // Read the input button pin
   if (val == 0) {
-    msgActive = false;    // cancel message
-    if (DEBUG) { Serial.println("Message canceled"); }
+    _msgActive = false;                   // Cancel the message
+    if (DEBUG) { Serial.println("Message canceled by button"); }
   }
 }

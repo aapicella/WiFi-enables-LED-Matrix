@@ -59,9 +59,8 @@ void updateTimeDate()
 }
 
 void saveTime(int d, int mo, int yr, int hr, int m, int s)
-{
-  // Create a variable to hold the data 
-  DateTime MyTimestamp;
+{  
+  DateTime MyTimestamp;                   // Create a variable to hold the data 
 
   // Load it with the date and time you want to set, for example
   //   Saturday the 3rd of October 2020 at 14:17 and 33 Seconds...
@@ -71,29 +70,44 @@ void saveTime(int d, int mo, int yr, int hr, int m, int s)
   MyTimestamp.Hour   = hr;
   MyTimestamp.Minute = m;
   MyTimestamp.Second = s;
-  
-  // Then write it to the clock
-  _clock.write(MyTimestamp);
+    
+  _clock.write(MyTimestamp);              // Then write it to the clock
 }
 
-void readTime() 
+DateTime getTime() 
 {
-  // Create a variable to hold the data 
-  DateTime MyTimestamp;
-
-  // Ask the clock for the data.
-  MyTimestamp = _clock.read();
-
-//  checkDst(MyTimestamp);
+  DateTime MyTimestamp;                   // Create a variable to hold the data 
+  MyTimestamp = _clock.read();            // Ask the clock for the data
+  
+//  checkDst(MyTimestamp);                  // Check daylight savings ....aaaagggghhhh!!!!
 
   int hr = MyTimestamp.Hour;
   if (daylightSavings == 1) {
     hr = hr + 1;
   }
+  MyTimestamp.Hour = hr;
+  
+  return MyTimestamp;
+}
 
-  String timeString = String(hr) + ":" + String(MyTimestamp.Minute) + ":" + String(MyTimestamp.Second);
-  strcpy(_text, timeString.c_str());
-  _length=strlen(_text);
+void readTime() 
+{
+  DateTime MyTimestamp;                   // Create a variable to hold the data 
+  MyTimestamp = getTime();                // Get the time
+  
+  if (_msgActive == true) { 
+    if (MyTimestamp.Hour >= _msgTimeoutNextHr && MyTimestamp.Minute >= _msgTimeoutNextMin) {
+      _msgActive = false;                 // Cancel the message
+      if (DEBUG) { Serial.println("Message canceled by timeout"); }
+    } else {
+      checkMsgCancelBt();
+    }
+  } else {
+    String timeString = String(MyTimestamp.Hour) + ":" + String(MyTimestamp.Minute) + ":" + String(MyTimestamp.Second);
+    strcpy(_text, timeString.c_str());
+    _length=strlen(_text);
+    
+    if (DEBUG) { Serial.println(timeString); }
+  }
 
-  if (DEBUG) { Serial.println(timeString); }
 }
