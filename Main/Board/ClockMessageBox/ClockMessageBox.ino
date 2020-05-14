@@ -43,7 +43,7 @@
 
 /*----------------------------system----------------------------*/
 const String _progName = "ClockMessageBox";
-const String _progVers = "0.8";           // Added MD_Parola library
+const String _progVers = "0.81";          // MD_Parola tweaks and BT moved to D0 (GPIO16) with external 10K pullup
 #define DEBUG 1                           // 0 or 1 - remove later
 // Remember to change DST flag back to init 0 when daylight savings is working!
 
@@ -59,7 +59,9 @@ const String _progVers = "0.8";           // Added MD_Parola library
 #define SDA_PIN   4                       // SDA to D2 (GPIO4) yellow
 // button
 // D3 and D4 have internal 10k pullups. Connect straight to ground. Set INPUT_PULLUP ???
-#define BT_PIN    0                       // BT  to D3 (GPIO0)
+//#define BT_PIN    0                       // BT  to D3 (GPIO0) - damn, if pulled low at start then boot will fail !!!
+// probably D0 (GPIO16) with an external pullup 10k?
+#define BT_PIN    16                      // BT to D0 (GPIO16) with external 10K pullup
 // D4 (GPIO2)
 // can use D0 for WS2812B LED if needed
 
@@ -87,12 +89,12 @@ const int LEDMATRIX_WIDTH = 31;
 int x = LEDMATRIX_WIDTH, y=0;             // start top left
 
 //Parola
-uint8_t _intensity = 6;                   // 0-15
+uint8_t _intensity = 3;                   // 0-15
 #define SPEED_TIME  25
 #define PAUSE_TIME  1000
 uint8_t _frameDelay = 25;                  // default frame delay value
 textEffect_t _effect[] = { PA_PRINT, PA_SCROLL_LEFT, };
-textPosition_t _textAlign[] = { PA_CENTER, PA_LEFT, };
+textPosition_t _textAlign[] = { PA_CENTER, PA_LEFT, }; 
 
 #define BUF_SIZE  512
 char _text[BUF_SIZE] = " Hello ";         // Marquee text
@@ -100,7 +102,7 @@ int _length = strlen(_text);
 const int _animDelay = 100; //75;         // frameDelay ???
 
 /*----------------------------DS3231----------------------------*/
- DS3231_Simple _clock;
+DS3231_Simple _clock;
  
 /*----------------------------NTP-------------------------------*/
 WiFiUDP _ntpUDP;
@@ -127,7 +129,7 @@ void setup()
     Serial.println();
   }
 
-  pinMode(BT_PIN, INPUT);                 // Set button pin as input
+  pinMode(BT_PIN, INPUT);                 // Set button pin as input (with external 10K pullup)
   //pinMode(BT_PIN, INPUT_PULLUP);          // Set button pin as input with pullup
   
   _clock.begin();                         // Initialise the DS3231 clock
@@ -154,16 +156,16 @@ void setup()
 
 void loop() 
 {
-  _msgActive = false;                     // TEMP - remove when button attached
-  readTime();                           // can i do this every loop ?
+  //_msgActive = false;                     // TEMP - remove when button attached
+  readTime();                           // contains a check for message cancel button
   
   displayText(_text);
 
   if (DEBUG) {
-    _clock.printDateTo_YMD(Serial);
-    Serial.print(' ');
-    _clock.printTimeTo_HMS(Serial);
-    Serial.println();
+    //_clock.printDateTo_YMD(Serial);
+    //Serial.print(' ');
+    //_clock.printTimeTo_HMS(Serial);
+    //Serial.println();
   }
 
   if (_wifiAvailable) {

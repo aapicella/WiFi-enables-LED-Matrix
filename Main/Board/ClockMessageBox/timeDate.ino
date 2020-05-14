@@ -107,7 +107,7 @@ void readTime()
     strcpy(_text, timeString.c_str());
     _length=strlen(_text);
     
-    if (DEBUG) { Serial.println(timeString); }
+    //if (DEBUG) { Serial.println(timeString); }
   }
 
 }
