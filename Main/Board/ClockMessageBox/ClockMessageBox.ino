@@ -28,24 +28,27 @@
  
 #include <WiFiManager.h>                  // https://github.com/tzapu/WiFiManager - web page @ 192.168.4.1
 #include <SPI.h>
+#include <WiFiUdp.h>
+#include <NTPClient.h>
 #include <MD_Parola.h>
 #include <MD_MAX72xx.h>
-/* 
- *  _BV(bit) is a macro defined in  avr/io.h file in AVR libraries.
- *  Added the following to DS3231_Simple.h for temporary fix.
- *  
- * #define _BV(bit) \
- * (1 << (bit))
- */
-#include <DS3231_Simple.h>
-#include <NTPClient.h>
-#include <WiFiUdp.h>
+#include <TimeLib.h>                      // https://github.com/PaulStoffregen/Time
+#include <DS1307RTC.h>                    // https://github.com/PaulStoffregen/DS1307RTC
+#include <Timezone.h>                     // https://github.com/JChristensen/Timezone
+
+// UK Time Zone (London)
+// British Summer Time (BST)
+// https://en.wikipedia.org/wiki/British_Summer_Time
+TimeChangeRule myDST = {"DST", Last, Sun, Mar, 1, 0}; // Daylight savings time = UTC minus 1 hour
+TimeChangeRule myUTC = {"UTC", Last, Sun, Oct, 1, 0}; // Standard time = UTC
+Timezone myTimeZone(myDST, myUTC);
+TimeChangeRule *timeChangeRule;           // Pointer to the time change rule, use to get TZ abbrev
 
 /*----------------------------system----------------------------*/
 const String _progName = "ClockMessageBox";
-const String _progVers = "0.81";          // MD_Parola tweaks and BT moved to D0 (GPIO16) with external 10K pullup
+const String _progVers = "0.82";          // Swap time, DS3231 and Daylight Savings libraries.
 #define DEBUG 1                           // 0 or 1 - remove later
-// Remember to change DST flag back to init 0 when daylight savings is working!
+#define DEBUG_TIME 0                      // 0 or 1 - remove later
 
 /*----------------------------pins------------------------------*/
 // Max7219 to Wemos D1 Mini Pro (SPI - Serial) - 5V
@@ -86,6 +89,7 @@ MD_Parola _p = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
 // Define LED Matrix dimensions (0-n) - eg: 32x8 = 31x7 (4 8x8 blocks)
 const int LEDMATRIX_WIDTH = 31;  
+  timeStamp = GetTime();                  // Get the time
 int x = LEDMATRIX_WIDTH, y=0;             // start top left
 
 //Parola
@@ -101,18 +105,12 @@ char _text[BUF_SIZE] = " Hello ";         // Marquee text
 int _length = strlen(_text); 
 const int _animDelay = 100; //75;         // frameDelay ???
 
-/*----------------------------DS3231----------------------------*/
-DS3231_Simple _clock;
- 
 /*----------------------------NTP-------------------------------*/
 WiFiUDP _ntpUDP;
 NTPClient _timeClient(_ntpUDP, "europe.pool.ntp.org");  // specifically picking europe region
 char _daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 String _months[12]={"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 int daylightSavings = 1;  // DST flag   ..TEMP 1 - should be 0
-
-/*----------------------------values----------------------------*/
-//const int _animDelay = 100; //75;
 
   
 void setup() 
@@ -132,7 +130,11 @@ void setup()
   pinMode(BT_PIN, INPUT);                 // Set button pin as input (with external 10K pullup)
   //pinMode(BT_PIN, INPUT_PULLUP);          // Set button pin as input with pullup
   
-  _clock.begin();                         // Initialise the DS3231 clock
+  setSyncProvider(RTC.get);               // the function to get the time from the RTC
+  if (DEBUG) {
+    if(timeStatus()!= timeSet) { Serial.println("Unable to sync with the RTC"); }
+    else { Serial.println("RTC has set the system time"); }
+  }
   
   _p.begin();                             // Initialise the display
   _p.setIntensity(_intensity);                      
@@ -141,11 +143,10 @@ void setup()
   _p.setSpeed(_frameDelay);
   _p.displayClear();
 
-  //displayText(_text);
   _p.displayText(_text, _textAlign[0], SPEED_TIME, PAUSE_TIME, _effect[0], PA_NO_EFFECT); // center, print
   
   setupWifiManager();
-  
+
   if (_wifiAvailable) 
   {
     updateTimeDate();
@@ -157,16 +158,9 @@ void setup()
 void loop() 
 {
   //_msgActive = false;                     // TEMP - remove when button attached
-  readTime();                           // contains a check for message cancel button
+  readTime();                             // contains a check for message cancel button
   
   displayText(_text);
-
-  if (DEBUG) {
-    //_clock.printDateTo_YMD(Serial);
-    //Serial.print(' ');
-    //_clock.printTimeTo_HMS(Serial);
-    //Serial.println();
-  }
 
   if (_wifiAvailable) {
     webMessage();

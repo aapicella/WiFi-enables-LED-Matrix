@@ -26,12 +26,13 @@ void updateTimeDate()
   int currentYear = ptm->tm_year+1900;
   int yr = currentYear-2000;
   
-  saveTime(_timeClient.getDay(), currentMonth, yr, _timeClient.getHours(), _timeClient.getMinutes(), _timeClient.getSeconds());
+  setTime(_timeClient.getHours(), _timeClient.getMinutes(), _timeClient.getSeconds(), _timeClient.getDay(), currentMonth, yr);
   
   if (DEBUG) {
-    // And use it, we will read it back for example...  
     Serial.print("The time has been set to: ");
-    _clock.printTo(Serial);
+    Serial.print(hour());
+    printDigits(minute());
+    printDigits(second());
     Serial.println();
     
     Serial.print("Month day: ");
@@ -60,54 +61,72 @@ void updateTimeDate()
 
 void saveTime(int d, int mo, int yr, int hr, int m, int s)
 {  
-  DateTime MyTimestamp;                   // Create a variable to hold the data 
+  tmElements_t timeStamp;                 // Create a variable to hold the data 
 
-  // Load it with the date and time you want to set, for example
-  //   Saturday the 3rd of October 2020 at 14:17 and 33 Seconds...
-  MyTimestamp.Day    = d;
-  MyTimestamp.Month  = mo;
-  MyTimestamp.Year   = yr; 
-  MyTimestamp.Hour   = hr;
-  MyTimestamp.Minute = m;
-  MyTimestamp.Second = s;
+  // Load it with the date and time you want to set
+  timeStamp.Day    = d;
+  timeStamp.Month  = mo;
+  timeStamp.Year   = yr; 
+  timeStamp.Hour   = hr;
+  timeStamp.Minute = m;
+  timeStamp.Second = s;
     
-  _clock.write(MyTimestamp);              // Then write it to the clock
+  RTC.write(timeStamp);                   // Then write it to the clock
 }
 
-DateTime getTime() 
+/* 
+ * Get the time and check and/or convert to daylight savings.
+ * Returns a tmElements_t timestamp.
+ */
+tmElements_t GetTime() 
 {
-  DateTime MyTimestamp;                   // Create a variable to hold the data 
-  MyTimestamp = _clock.read();            // Ask the clock for the data
+  time_t utc = now();                     // Create a variable to hold the data
+  time_t local = myTimeZone.toLocal(utc, &timeChangeRule); // Get the time and check/convert daylight savings
+  tmElements_t timeStamp;                 // Create a variable to hold the data 
+  // timeStamp.Year
+  // timeStamp.Month
+  // timeStamp.Day
+  // timeStamp.Hour
+  // timeStamp.Minute
+  // timeStamp.Second
   
-//  checkDst(MyTimestamp);                  // Check daylight savings ....aaaagggghhhh!!!!
-
-  int hr = MyTimestamp.Hour;
-  if (daylightSavings == 1) {
-    hr = hr + 1;
+  //local = makeTime(timeStamp);            // Convert the tmElements_t to a time_t variable with function makeTime
+  breakTime(local, timeStamp);            // Convert back to a tmElements_t with function breakTime
+  
+  if (DEBUG_TIME) { 
+    Serial.print("The time is now: ");
+    Serial.print(hour());
+    printDigits(minute());
+    printDigits(second());
+    Serial.println();
   }
-  MyTimestamp.Hour = hr;
   
-  return MyTimestamp;
+  return timeStamp;
 }
 
 void readTime() 
 {
-  DateTime MyTimestamp;                   // Create a variable to hold the data 
-  MyTimestamp = getTime();                // Get the time
+  tmElements_t timeStamp;                 // Create a variable to hold the data 
+  timeStamp = GetTime();                  // Get the time
   
   if (_msgActive == true) { 
-    if (MyTimestamp.Hour >= _msgTimeoutNextHr && MyTimestamp.Minute >= _msgTimeoutNextMin) {
+    if (timeStamp.Hour >= _msgTimeoutNextHr && timeStamp.Minute >= _msgTimeoutNextMin) {
       _msgActive = false;                 // Cancel the message
       if (DEBUG) { Serial.println("Message canceled by timeout"); }
     } else {
       checkMsgCancelBt();
     }
   } else {
-    String timeString = String(MyTimestamp.Hour) + ":" + String(MyTimestamp.Minute) + ":" + String(MyTimestamp.Second);
+    String timeString = String(timeStamp.Hour) + ":" + String(timeStamp.Minute) + ":" + String(timeStamp.Second);
     strcpy(_text, timeString.c_str());
     _length=strlen(_text);
-    
-    //if (DEBUG) { Serial.println(timeString); }
   }
 
+}
+
+void printDigits(int digits) 
+{
+  Serial.print(":");
+  if (digits < 10) { Serial.print('0'); }
+  Serial.print(digits);
 }

@@ -86,10 +86,10 @@ void webMessage()
     client.print(s);
 
     // Set timeout for when message clears and reverts back to being a clock.
-    DateTime MyTimestamp;                 // Create a variable to hold the data 
-    MyTimestamp = getTime();              // Get the time
-    _msgTimeoutNextHr = MyTimestamp.Hour + _msgTimeoutHr; // The hour at which to revert
-    _msgTimeoutNextMin = MyTimestamp.Minute;            // The minute at which to revert
+    tmElements_t timeStamp;               // Create a variable to hold the data 
+    timeStamp = GetTime();                // Get the time
+    _msgTimeoutNextHr = timeStamp.Hour + _msgTimeoutHr; // The hour at which to revert
+    _msgTimeoutNextMin = timeStamp.Minute;            // The minute at which to revert
     
     _msgActive = true;
     
