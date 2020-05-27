@@ -39,7 +39,7 @@
 
 /*----------------------------system----------------------------*/
 const String _progName = "ClockMessageBox";
-const String _progVers = "0.86";          // Removed seconds and added check for single digits in time display.
+const String _progVers = "0.87";          // Fixed daylight savings adjustment
 #define DEBUG 1                           // 0 or 1 - remove later
 #define DEBUG_TIME 0                      // 0 or 1 - remove later
 
@@ -121,7 +121,7 @@ String _months[12]={"January", "February", "March", "April", "May", "June", "Jul
 // UK Time Zone (London)
 // British Summer Time (BST)
 // https://en.wikipedia.org/wiki/British_Summer_Time
-TimeChangeRule myDST = {"DST", Last, Sun, Mar, 1, 0}; // Daylight savings time = UTC minus 1 hour
+TimeChangeRule myDST = {"DST", Last, Sun, Mar, 1, 60}; // Daylight savings time = UTC minus 1 hour
 TimeChangeRule myUTC = {"UTC", Last, Sun, Oct, 1, 0}; // Standard time = UTC
 Timezone myTimeZone(myDST, myUTC);
 TimeChangeRule *timeChangeRule;           // Pointer to the time change rule, use to get TZ abbrev
