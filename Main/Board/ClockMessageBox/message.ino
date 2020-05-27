@@ -71,7 +71,7 @@ void webMessage()
 
     strcpy(_text, answer.c_str());
     _length=strlen(_text);
-    x=LEDMATRIX_WIDTH;
+    //x=LEDMATRIX_WIDTH;
     //_mx.clear();
 
     //Serial.println(req.substring(req.indexOf('=')+1));

@@ -37,17 +37,9 @@
 #include <DS1307RTC.h>                    // https://github.com/PaulStoffregen/DS1307RTC
 #include <Timezone.h>                     // https://github.com/JChristensen/Timezone
 
-// UK Time Zone (London)
-// British Summer Time (BST)
-// https://en.wikipedia.org/wiki/British_Summer_Time
-TimeChangeRule myDST = {"DST", Last, Sun, Mar, 1, 0}; // Daylight savings time = UTC minus 1 hour
-TimeChangeRule myUTC = {"UTC", Last, Sun, Oct, 1, 0}; // Standard time = UTC
-Timezone myTimeZone(myDST, myUTC);
-TimeChangeRule *timeChangeRule;           // Pointer to the time change rule, use to get TZ abbrev
-
 /*----------------------------system----------------------------*/
 const String _progName = "ClockMessageBox";
-const String _progVers = "0.85";          // Added Show IP by button and button lock
+const String _progVers = "0.86";          // Removed seconds and added check for single digits in time display.
 #define DEBUG 1                           // 0 or 1 - remove later
 #define DEBUG_TIME 0                      // 0 or 1 - remove later
 
@@ -103,9 +95,8 @@ long _btLockInterval = 1000;              // Amount of time to lock the button i
 MD_Parola _p = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
 // Define LED Matrix dimensions (0-n) - eg: 32x8 = 31x7 (4 8x8 blocks)
-const int LEDMATRIX_WIDTH = 31;  
-//tmElements_t timeStamp = GetTime();                  // Get the time
-int x = LEDMATRIX_WIDTH, y=0;             // start top left
+//const int LEDMATRIX_WIDTH = 39;           // 5 8x8 blocks  
+//int x = LEDMATRIX_WIDTH, y=0;             // start top left
 
 //Parola
 uint8_t _intensity = 1;                   // 0-15
@@ -125,11 +116,20 @@ WiFiUDP _ntpUDP;
 NTPClient _timeClient(_ntpUDP, "europe.pool.ntp.org");  // specifically picking europe region
 char _daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 String _months[12]={"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
-int daylightSavings = 1;  // DST flag   ..TEMP 1 - should be 0
+
+/*----------------------------daylight savings------------------*/
+// UK Time Zone (London)
+// British Summer Time (BST)
+// https://en.wikipedia.org/wiki/British_Summer_Time
+TimeChangeRule myDST = {"DST", Last, Sun, Mar, 1, 0}; // Daylight savings time = UTC minus 1 hour
+TimeChangeRule myUTC = {"UTC", Last, Sun, Oct, 1, 0}; // Standard time = UTC
+Timezone myTimeZone(myDST, myUTC);
+TimeChangeRule *timeChangeRule;           // Pointer to the time change rule, use to get TZ abbrev
 
 /* 
  * Get the time and check and/or convert to daylight savings.
  * Returns a tmElements_t timestamp.
+ * Placed here so that it stays in scope for tmElements_t timeStamp.
  */
 tmElements_t GetTime() 
 {
@@ -156,9 +156,11 @@ tmElements_t GetTime()
   
   return timeStamp;
 }
-tmElements_t timeStamp = GetTime();       // Get the time
 
-  
+tmElements_t timeStamp = GetTime();       // Timestamp to get the time
+
+
+/*----------------------------main------------------------------*/
 void setup() 
 {
   if (DEBUG) {
