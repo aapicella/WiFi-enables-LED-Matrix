@@ -90,8 +90,10 @@ void webMessage()
     timeStamp = GetTime();                // Get the time
     _msgTimeoutNextHr = timeStamp.Hour + _msgTimeoutHr; // The hour at which to revert
     _msgTimeoutNextMin = timeStamp.Minute;            // The minute at which to revert
-    
+
+    _p.displayClear();
     _msgActive = true;
+    _showIpActive = false;                // Just in case
     
     if (DEBUG) { Serial.println("Message active"); Serial.println(_text); }
     return;
@@ -106,11 +108,13 @@ void webMessage()
   }
 }
 
-void checkMsgCancelBt() 
+/*
+ * Cancel the message.
+ * Called from checkMsgCancelBt and readTime.
+ */
+void cancelMessage() 
 {
-  int val = digitalRead(BT_PIN);          // Read the input button pin / touch bt is active low
-  if (val == 0) {
-    _msgActive = false;                   // Cancel the message
-    if (DEBUG) { Serial.println("Message canceled by button"); }
-  }
+  _p.displayClear();
+  _msgActive = false;                 // Cancel the message
+  setBtLock();
 }

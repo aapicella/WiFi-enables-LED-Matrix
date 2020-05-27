@@ -47,7 +47,7 @@ TimeChangeRule *timeChangeRule;           // Pointer to the time change rule, us
 
 /*----------------------------system----------------------------*/
 const String _progName = "ClockMessageBox";
-const String _progVers = "0.83";          // fixed tmElements_t timeStamp does not name type - added Time.h include AND moved GetTime so stays in scope.
+const String _progVers = "0.85";          // Added Show IP by button and button lock
 #define DEBUG 1                           // 0 or 1 - remove later
 #define DEBUG_TIME 0                      // 0 or 1 - remove later
 
@@ -73,15 +73,29 @@ const String _progVers = "0.83";          // fixed tmElements_t timeStamp does n
 WiFiServer _server(80);                   // TCP server at port 80 will respond to HTTP requests
 IPAddress _ip;
 bool _wifiAvailable = false;              // Is wifi available for use?
-
-/*-----------------------------WIFI Manager---------------------*/
 const char* _apName = "ClockMessageBox";
 const char* _apPassword = "password";
+
+/*-----------------------------Show message and IP--------------*/
 volatile boolean _msgActive = false;      // Is the message currently being shown?
 int _msgTimeoutHr = 1;                    // Message timeout in hours - Change this!
 //int _msgTimeoutMin = 0;                   // Message timeout in minutes - not in use
 int _msgTimeoutNextHr = 0;                // Message timeout saved hour to clear msg 
 int _msgTimeoutNextMin = 0;               // Message timeout saved minute to clear msg
+
+volatile boolean _showIpActive = false;   // Is the IP currently being shown?
+unsigned long _showIpSaveTime = 0;        // Save the current time
+// 6000000 = 10 minutes in milliseconds
+//   60000 =  1 minute  in milliseconds
+//   30000 = 30 seconds in milliseconds
+//    1000 =  1 second  in milliseconds
+long _showIpDisplayInterval = 10000;      // Amount of time to display the IP in milliseconds
+
+// Issue: When button is pressed to cancel the button stays low for a bit so the Show IP triggers straight away.
+// Resolve: Put in a button lock for X time.
+volatile boolean _btLock = false;         // Button lock
+unsigned long _btLockSaveTime = 0;        // Save the current time
+long _btLockInterval = 1000;              // Amount of time to lock the button in milliseconds
 
 /*----------------------------LED Matrix------------------------*/
 #define HARDWARE_TYPE MD_MAX72XX::GENERIC_HW 
@@ -95,9 +109,9 @@ int x = LEDMATRIX_WIDTH, y=0;             // start top left
 
 //Parola
 uint8_t _intensity = 1;                   // 0-15
-#define SPEED_TIME  25
+#define SPEED_TIME  50                    // 25 - higher is slower. Change to variable int later.
 #define PAUSE_TIME  1000
-uint8_t _frameDelay = 25;                  // default frame delay value
+//uint8_t _frameDelay = 25;                 // default frame delay value
 textEffect_t _effect[] = { PA_PRINT, PA_SCROLL_LEFT, };
 textPosition_t _textAlign[] = { PA_CENTER, PA_LEFT, }; 
 
@@ -142,7 +156,7 @@ tmElements_t GetTime()
   
   return timeStamp;
 }
-tmElements_t timeStamp = GetTime();                  // Get the time
+tmElements_t timeStamp = GetTime();       // Get the time
 
   
 void setup() 
@@ -181,12 +195,15 @@ void setup()
 
 void loop() 
 {
-  //_msgActive = false;                     // TEMP - remove when button attached
-  readTime();                             // contains a check for message cancel button
+  checkShowIpBt();
+  
+  readTime();                             // Contains a check for message cancel button
   
   displayText(_text);
 
   if (_wifiAvailable) {
     webMessage();
   }
+  
+  checkBtLock();
 }

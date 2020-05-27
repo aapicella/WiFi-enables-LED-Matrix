@@ -74,7 +74,6 @@ void saveTime(int d, int mo, int yr, int hr, int m, int s)
   RTC.write(timeStamp);                   // Then write it to the clock
 }
 
-
 void readTime() 
 {
   tmElements_t timeStamp;                 // Create a variable to hold the data 
@@ -82,12 +81,21 @@ void readTime()
   
   if (_msgActive == true) { 
     if (timeStamp.Hour >= _msgTimeoutNextHr && timeStamp.Minute >= _msgTimeoutNextMin) {
-      _msgActive = false;                 // Cancel the message
+      cancelMessage();
       if (DEBUG) { Serial.println("Message canceled by timeout"); }
     } else {
       checkMsgCancelBt();
     }
-  } else {
+  } 
+  
+  else if (_showIpActive == true) {
+    String ipStr = " _ " + String(_ip[0]) + '.' + String(_ip[1]) + '.' + String(_ip[2]) + '.' + String(_ip[3]);
+    if (DEBUG) { Serial.print("IP displayed - "); Serial.println(ipStr);}
+    strcpy(_text, ipStr.c_str());
+    _length=strlen(_text);
+  } 
+  
+  else {
     String timeString = String(timeStamp.Hour) + ":" + String(timeStamp.Minute) + ":" + String(timeStamp.Second);
     strcpy(_text, timeString.c_str());
     _length=strlen(_text);
