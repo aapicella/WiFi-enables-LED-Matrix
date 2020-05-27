@@ -108,8 +108,8 @@ void webMessage()
 
 void checkMsgCancelBt() 
 {
-  int val = digitalRead(BT_PIN);          // Read the input button pin
-  if (val == 1) {
+  int val = digitalRead(BT_PIN);          // Read the input button pin / touch bt is active low
+  if (val == 0) {
     _msgActive = false;                   // Cancel the message
     if (DEBUG) { Serial.println("Message canceled by button"); }
   }

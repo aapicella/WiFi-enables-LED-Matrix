@@ -74,35 +74,6 @@ void saveTime(int d, int mo, int yr, int hr, int m, int s)
   RTC.write(timeStamp);                   // Then write it to the clock
 }
 
-/* 
- * Get the time and check and/or convert to daylight savings.
- * Returns a tmElements_t timestamp.
- */
-tmElements_t GetTime() 
-{
-  time_t utc = now();                     // Create a variable to hold the data
-  time_t local = myTimeZone.toLocal(utc, &timeChangeRule); // Get the time and check/convert daylight savings
-  tmElements_t timeStamp;                 // Create a variable to hold the data 
-  // timeStamp.Year
-  // timeStamp.Month
-  // timeStamp.Day
-  // timeStamp.Hour
-  // timeStamp.Minute
-  // timeStamp.Second
-  
-  //local = makeTime(timeStamp);            // Convert the tmElements_t to a time_t variable with function makeTime
-  breakTime(local, timeStamp);            // Convert back to a tmElements_t with function breakTime
-  
-  if (DEBUG_TIME) { 
-    Serial.print("The time is now: ");
-    Serial.print(hour());
-    printDigits(minute());
-    printDigits(second());
-    Serial.println();
-  }
-  
-  return timeStamp;
-}
 
 void readTime() 
 {

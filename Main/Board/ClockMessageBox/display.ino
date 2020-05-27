@@ -1,6 +1,17 @@
 /*----------------------------display---------------------------*/
+void setupDisplay() 
+{
+  _p.begin();                             // Initialise the display
+  _p.setIntensity(_intensity);                      
+  _p.setInvert(false);
+  _p.displaySuspend(false);
+  _p.setSpeed(_frameDelay);
+  _p.displayClear();
 
-void displayText ( const char *theText)
+  _p.displayText(_text, _textAlign[0], SPEED_TIME, PAUSE_TIME, _effect[0], PA_NO_EFFECT); // center, print
+}
+
+void displayText( const char *theText)
 {
   // If message is active then display message, else show the clock.
   if (_p.displayAnimate())              // animates and returns true when an animation is completed

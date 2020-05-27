@@ -32,6 +32,7 @@
 #include <NTPClient.h>
 #include <MD_Parola.h>
 #include <MD_MAX72xx.h>
+#include <Time.h>
 #include <TimeLib.h>                      // https://github.com/PaulStoffregen/Time
 #include <DS1307RTC.h>                    // https://github.com/PaulStoffregen/DS1307RTC
 #include <Timezone.h>                     // https://github.com/JChristensen/Timezone
@@ -46,7 +47,7 @@ TimeChangeRule *timeChangeRule;           // Pointer to the time change rule, us
 
 /*----------------------------system----------------------------*/
 const String _progName = "ClockMessageBox";
-const String _progVers = "0.82";          // Swap time, DS3231 and Daylight Savings libraries.
+const String _progVers = "0.83";          // fixed tmElements_t timeStamp does not name type - added Time.h include AND moved GetTime so stays in scope.
 #define DEBUG 1                           // 0 or 1 - remove later
 #define DEBUG_TIME 0                      // 0 or 1 - remove later
 
@@ -64,7 +65,7 @@ const String _progVers = "0.82";          // Swap time, DS3231 and Daylight Savi
 // D3 and D4 have internal 10k pullups. Connect straight to ground. Set INPUT_PULLUP ???
 //#define BT_PIN    0                       // BT  to D3 (GPIO0) - damn, if pulled low at start then boot will fail !!!
 // probably D0 (GPIO16) with an external pullup 10k?
-#define BT_PIN    16                      // BT to D0 (GPIO16) with external 10K pullup
+#define BT_PIN    16                      // BT to D0 (GPIO16) with external 10K pullup / touch bt is active low
 // D4 (GPIO2)
 // can use D0 for WS2812B LED if needed
 
@@ -89,11 +90,11 @@ MD_Parola _p = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
 // Define LED Matrix dimensions (0-n) - eg: 32x8 = 31x7 (4 8x8 blocks)
 const int LEDMATRIX_WIDTH = 31;  
-  timeStamp = GetTime();                  // Get the time
+//tmElements_t timeStamp = GetTime();                  // Get the time
 int x = LEDMATRIX_WIDTH, y=0;             // start top left
 
 //Parola
-uint8_t _intensity = 3;                   // 0-15
+uint8_t _intensity = 1;                   // 0-15
 #define SPEED_TIME  25
 #define PAUSE_TIME  1000
 uint8_t _frameDelay = 25;                  // default frame delay value
@@ -111,6 +112,37 @@ NTPClient _timeClient(_ntpUDP, "europe.pool.ntp.org");  // specifically picking 
 char _daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 String _months[12]={"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 int daylightSavings = 1;  // DST flag   ..TEMP 1 - should be 0
+
+/* 
+ * Get the time and check and/or convert to daylight savings.
+ * Returns a tmElements_t timestamp.
+ */
+tmElements_t GetTime() 
+{
+  time_t utc = now();                     // Create a variable to hold the data
+  time_t local = myTimeZone.toLocal(utc, &timeChangeRule); // Get the time and check/convert daylight savings
+  tmElements_t timeStamp;                 // Create a variable to hold the data 
+  // timeStamp.Year
+  // timeStamp.Month
+  // timeStamp.Day
+  // timeStamp.Hour
+  // timeStamp.Minute
+  // timeStamp.Second
+  
+  //local = makeTime(timeStamp);            // Convert the tmElements_t to a time_t variable with function makeTime
+  breakTime(local, timeStamp);            // Convert back to a tmElements_t with function breakTime
+  
+  if (DEBUG_TIME) { 
+    Serial.print("The time is now: ");
+    Serial.print(hour());
+    printDigits(minute());
+    printDigits(second());
+    Serial.println();
+  }
+  
+  return timeStamp;
+}
+tmElements_t timeStamp = GetTime();                  // Get the time
 
   
 void setup() 
@@ -135,16 +167,8 @@ void setup()
     if(timeStatus()!= timeSet) { Serial.println("Unable to sync with the RTC"); }
     else { Serial.println("RTC has set the system time"); }
   }
-  
-  _p.begin();                             // Initialise the display
-  _p.setIntensity(_intensity);                      
-  _p.setInvert(false);
-  _p.displaySuspend(false);
-  _p.setSpeed(_frameDelay);
-  _p.displayClear();
 
-  _p.displayText(_text, _textAlign[0], SPEED_TIME, PAUSE_TIME, _effect[0], PA_NO_EFFECT); // center, print
-  
+  setupDisplay();
   setupWifiManager();
 
   if (_wifiAvailable) 
