@@ -44,7 +44,7 @@ void checkShowIpBt()
  */
 /*
  * Set button lock.
- * Called from checkMsgCancelBt and readTime.
+ * Called from checkMsgCancelBt and setDisplayText.
  */
 void setBtLock() 
 {

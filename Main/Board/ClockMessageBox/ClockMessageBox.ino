@@ -39,7 +39,7 @@
 
 /*----------------------------system----------------------------*/
 const String _progName = "ClockMessageBox";
-const String _progVers = "0.87";          // Fixed daylight savings adjustment
+const String _progVers = "0.88";          // Cleanup and notes.
 #define DEBUG 1                           // 0 or 1 - remove later
 #define DEBUG_TIME 0                      // 0 or 1 - remove later
 
@@ -54,12 +54,7 @@ const String _progVers = "0.87";          // Fixed daylight savings adjustment
 #define SCL_PIN   5                       // SCL to D1 (GPIO5) green
 #define SDA_PIN   4                       // SDA to D2 (GPIO4) yellow
 // button
-// D3 and D4 have internal 10k pullups. Connect straight to ground. Set INPUT_PULLUP ???
-//#define BT_PIN    0                       // BT  to D3 (GPIO0) - damn, if pulled low at start then boot will fail !!!
-// probably D0 (GPIO16) with an external pullup 10k?
 #define BT_PIN    16                      // BT to D0 (GPIO16) with external 10K pullup / touch bt is active low
-// D4 (GPIO2)
-// can use D0 for WS2812B LED if needed
 
 /*-----------------------------WIFI-----------------------------*/
 WiFiServer _server(80);                   // TCP server at port 80 will respond to HTTP requests
@@ -77,14 +72,8 @@ int _msgTimeoutNextMin = 0;               // Message timeout saved minute to cle
 
 volatile boolean _showIpActive = false;   // Is the IP currently being shown?
 unsigned long _showIpSaveTime = 0;        // Save the current time
-// 6000000 = 10 minutes in milliseconds
-//   60000 =  1 minute  in milliseconds
-//   30000 = 30 seconds in milliseconds
-//    1000 =  1 second  in milliseconds
 long _showIpDisplayInterval = 10000;      // Amount of time to display the IP in milliseconds
 
-// Issue: When button is pressed to cancel the button stays low for a bit so the Show IP triggers straight away.
-// Resolve: Put in a button lock for X time.
 volatile boolean _btLock = false;         // Button lock
 unsigned long _btLockSaveTime = 0;        // Save the current time
 long _btLockInterval = 1000;              // Amount of time to lock the button in milliseconds
@@ -94,15 +83,9 @@ long _btLockInterval = 1000;              // Amount of time to lock the button i
 #define MAX_DEVICES 5
 MD_Parola _p = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
-// Define LED Matrix dimensions (0-n) - eg: 32x8 = 31x7 (4 8x8 blocks)
-//const int LEDMATRIX_WIDTH = 39;           // 5 8x8 blocks  
-//int x = LEDMATRIX_WIDTH, y=0;             // start top left
-
-//Parola
 uint8_t _intensity = 1;                   // 0-15
 #define SPEED_TIME  50                    // 25 - higher is slower. Change to variable int later.
 #define PAUSE_TIME  1000
-//uint8_t _frameDelay = 25;                 // default frame delay value
 textEffect_t _effect[] = { PA_PRINT, PA_SCROLL_LEFT, };
 textPosition_t _textAlign[] = { PA_CENTER, PA_LEFT, }; 
 
@@ -176,7 +159,6 @@ void setup()
   }
 
   pinMode(BT_PIN, INPUT);                 // Set button pin as input (with external 10K pullup)
-  //pinMode(BT_PIN, INPUT_PULLUP);          // Set button pin as input with pullup
   
   setSyncProvider(RTC.get);               // the function to get the time from the RTC
   if (DEBUG) {
@@ -199,7 +181,7 @@ void loop()
 {
   checkShowIpBt();
   
-  readTime();                             // Contains a check for message cancel button
+  setDisplayText();                             // Contains a check for message cancel button
   
   displayText(_text);
 

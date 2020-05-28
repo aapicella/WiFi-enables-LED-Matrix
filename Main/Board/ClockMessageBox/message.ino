@@ -1,4 +1,9 @@
 /*----------------------------message---------------------------*/
+/*
+ * Web message.
+ * Provides 2 web pages to input the message to be displayed on the box.
+ * NOTE: Blocks the main thread.
+ */
 void webMessage() 
 {
   // Check if a client has connected
@@ -12,7 +17,6 @@ void webMessage()
   while(client.connected() && !client.available()) 
   {
     displayText(_text);     // mabye comment this out ???
-    //_p.displayText(_text);
     delay(1);
   }
 
@@ -110,7 +114,7 @@ void webMessage()
 
 /*
  * Cancel the message.
- * Called from checkMsgCancelBt and readTime.
+ * Called from checkMsgCancelBt and setDisplayText.
  */
 void cancelMessage() 
 {

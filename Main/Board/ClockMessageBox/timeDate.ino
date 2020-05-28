@@ -1,5 +1,10 @@
 /*----------------------------timeDate--------------------------*/
 
+/*
+ * Update time and date.
+ * Spins up an NTP client, connects to world clock and sets the current time.
+ * Called during setup if WIFI is available.
+ */
 void updateTimeDate() 
 {  
   _timeClient.begin();                  // Initialise the NTP client
@@ -59,6 +64,10 @@ void updateTimeDate()
   }
 }
 
+/*
+ * Save time.
+ * Takes in the time and saves to RTC.
+ */
 void saveTime(int d, int mo, int yr, int hr, int m, int s)
 {  
   tmElements_t timeStamp;                 // Create a variable to hold the data 
@@ -74,7 +83,12 @@ void saveTime(int d, int mo, int yr, int hr, int m, int s)
   RTC.write(timeStamp);                   // Then write it to the clock
 }
 
-void readTime() 
+/*
+ * Set the display text (excluding message).
+ * Checks if message is active or not, 
+ * if not checks and sets text to IP or current time.
+ */
+void setDisplayText() 
 {
   tmElements_t timeStamp;                 // Create a variable to hold the data 
   timeStamp = GetTime();                  // Get the time
@@ -102,11 +116,4 @@ void readTime()
     _length=strlen(_text);
   }
 
-}
-
-void printDigits(int digits) 
-{
-  Serial.print(":");
-  if (digits < 10) { Serial.print('0'); }
-  Serial.print(digits);
 }
