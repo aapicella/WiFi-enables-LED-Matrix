@@ -7,7 +7,9 @@
 void webMessage() 
 {
   // Check if a client has connected
-  WiFiClient client = _server.available();
+  static WiFiClient client;
+  client = _server.available();
+  
   if (!client) 
   {
     return;

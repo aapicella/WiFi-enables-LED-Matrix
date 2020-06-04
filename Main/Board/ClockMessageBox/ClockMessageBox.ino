@@ -39,9 +39,10 @@
 
 /*----------------------------system----------------------------*/
 const String _progName = "ClockMessageBox";
-const String _progVers = "0.88";          // Cleanup and notes.
+const String _progVers = "0.89";          // tweaks
 #define DEBUG 1                           // 0 or 1 - remove later
 #define DEBUG_TIME 0                      // 0 or 1 - remove later
+#define DEBUG_BT 1                        // 0 or 1 - remove later
 
 /*----------------------------pins------------------------------*/
 // Max7219 to Wemos D1 Mini Pro (SPI - Serial) - 5V
@@ -179,6 +180,7 @@ void setup()
 
 void loop() 
 {
+  //testBtInput();
   checkShowIpBt();
   
   setDisplayText();                             // Contains a check for message cancel button

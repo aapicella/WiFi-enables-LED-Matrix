@@ -1,5 +1,19 @@
 /*----------------------------buttons---------------------------*/
 /*
+ * Check button input
+ */
+void testBtInput() 
+{
+  int val = digitalRead(BT_PIN);          // Read the input button pin / touch bt is active low
+  
+  if (val == 1) {
+    Serial.println("High");
+  } else {
+    Serial.println("Low");
+  }
+}
+
+/*
  * Check message cancel button.
  * Touch button.
  */
@@ -8,7 +22,7 @@ void checkMsgCancelBt()
   int val = digitalRead(BT_PIN);          // Read the input button pin / touch bt is active low
   if (val == 0) {
     cancelMessage();
-    if (DEBUG) { Serial.println("Message canceled by button"); }
+    if (DEBUG_BT) { Serial.println("Message canceled by button"); }
   }
 }
 
@@ -27,13 +41,13 @@ void checkShowIpBt()
       _p.displayClear();
       _showIpActive = true;                 // Show the IP for X seconds
       _showIpSaveTime = currentTime;        // Save the current time
-      if (DEBUG) { Serial.println("IP displayed by button"); }
+      if (DEBUG_BT) { Serial.println("IP displayed by button"); }
     }
   } else if (_showIpActive == true) {
     if (currentTime - _showIpSaveTime > _showIpDisplayInterval) {
       _p.displayClear();
       _showIpActive = false;                // Cancel show the IP
-      if (DEBUG) { Serial.println("IP display canceled"); }
+      if (DEBUG_BT) { Serial.println("IP display canceled"); }
     }
   }
 }
