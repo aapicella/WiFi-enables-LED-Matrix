@@ -1,12 +1,17 @@
 # Clock Message Box
 LED Matrix and ESP8266 project.
 
-Hardware used:
+### Concept
+A WIFI connected clock that can also show messages.
+
+### Equipment
+#### Hardware
 - Wemos D1 Mini Pro (ESP8266)
 - Max7219 LED matrix
 - DS3231 Clock
 
-Libraries used:
+#### Software 
+##### Libraries
 - https://github.com/esp8266/Arduino
 - https://github.com/MajicDesigns/MD_MAX72XX
 - https://github.com/MajicDesigns/MD_Parola
@@ -15,12 +20,17 @@ Libraries used:
 - https://github.com/JChristensen/Timezone
 - https://github.com/PaulStoffregen/DS1307RTC
 - https://github.com/arduino-libraries/NTPClient
-
-Originally based on project by aapicella (mostly replaced now).
+##### Originally based on project by aapicella (mostly replaced now).
 - https://github.com/aapicella/WiFi-enables-LED-Matrix
 - https://www.instructables.com/id/WIFI-Enabled-LED-Matrix/
 
-Instructions to setup device:  
+### Licence
+- Written by MTS Standish (Thurstan|mattKsp) 2016
+- Released under GNU GPLv3 (see LICENCE file)
+
+This software is provided on an "AS-IS-BASIS"
+
+### Instructions to setup device:  
 - Power on.  
 - Connect your phone/tablet/computer to Wifi device "ClockMessageBox".  
 - Connection password is "password".  
