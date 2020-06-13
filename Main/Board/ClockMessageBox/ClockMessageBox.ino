@@ -17,7 +17,7 @@
     
     https://github.com/mattThurstan/
 
-    WeMos D1 (R2 & mini) (ESP8266), 80 MHz, 115200 baud, 4M (3M)
+    Wemos D1 Mini Pro (ESP8266)
     Max7219 LED matrix
     DS3231 Clock
 
@@ -25,20 +25,13 @@
     https://github.com/aapicella/WiFi-enables-LED-Matrix
     https://www.instructables.com/id/WIFI-Enabled-LED-Matrix/
 */
-
-/*----------------------------libraries-------------------------*/
-#include <LittleFS.h>                     // ESP8266 file system
-// Captive web portal @ web page @ 192.168.4.1
-//#include <WiFiManager.h>                  // https://github.com/tzapu/WiFiManager - clash with ESPAsyncWebServer
-//#include <AsyncWiFiManager.h>             // https://github.com/lbussy/AsyncWiFiManager - try this fork
-#include <ESPAsyncWiFiManager.h>          // https://github.com/alanswx/ESPAsyncWiFiManager - or this - aagghhhh....
-// ok, it works with ESP Async WIFI Manager fork.. now walk away really slowly....
+ 
+#include <WiFiManager.h>                  // https://github.com/tzapu/WiFiManager - web page @ 192.168.4.1
 #include <SPI.h>
-#include <ESPAsyncWebServer.h>            // https://github.com/me-no-dev/ESPAsyncWebServer
 #include <WiFiUdp.h>
 #include <NTPClient.h>
-#include <MD_Parola.h>                    // https://github.com/MajicDesigns/MD_Parola 
-#include <MD_MAX72xx.h>                   // https://github.com/MajicDesigns/MD_MAX72XX
+#include <MD_Parola.h>
+#include <MD_MAX72xx.h>
 #include <Time.h>
 #include <TimeLib.h>                      // https://github.com/PaulStoffregen/Time
 #include <DS1307RTC.h>                    // https://github.com/PaulStoffregen/DS1307RTC
@@ -46,19 +39,17 @@
 
 /*----------------------------system----------------------------*/
 const String _progName = "ClockMessageBox";
-const String _progVers = "0.90";          // Implement Async Web Server
+const String _progVers = "0.89";          // tweaks
 #define DEBUG 1                           // 0 or 1 - remove later
-#define DEBUG_WIFI 0                      // 0 or 1 - remove later
-#define DEBUG_DISPLAY 0                   // 0 or 1 - remove later
 #define DEBUG_TIME 0                      // 0 or 1 - remove later
-#define DEBUG_BT 0                        // 0 or 1 - remove later
+#define DEBUG_BT 1                        // 0 or 1 - remove later
 
 /*----------------------------pins------------------------------*/
-// Max7219 to Wemos D1 Mini (SPI - Serial) - 5V
+// Max7219 to Wemos D1 Mini Pro (SPI - Serial) - 5V
 #define DATA_PIN  13                      // DIN to D7 (MOSI - GPIO 13) orange
 #define CS_PIN    12                      // CS  to D6 (MISO - GPIO 12) yellow
 #define CLK_PIN   14                      // CLK to D5 (SCLK - GPIO 14) green
-// DS3231 Clock to Wemos D1 Mini (I2C) - 5V
+// DS3231 Clock to Wemos D1 Mini Pro (I2C) - 5V
 // ground = orange
 // +3.3v = red
 #define SCL_PIN   5                       // SCL to D1 (GPIO5) green
@@ -67,8 +58,7 @@ const String _progVers = "0.90";          // Implement Async Web Server
 #define BT_PIN    16                      // BT to D0 (GPIO16) with external 10K pullup / touch bt is active low
 
 /*-----------------------------WIFI-----------------------------*/
-AsyncWebServer _webServer(80);            // TCP server at port 80 will respond to HTTP requests
-DNSServer dns;                            // ??? notactually used, but needed for ESP Async WIFI manager setup
+WiFiServer _server(80);                   // TCP server at port 80 will respond to HTTP requests
 IPAddress _ip;
 bool _wifiAvailable = false;              // Is wifi available for use?
 const char* _apName = "ClockMessageBox";
@@ -190,11 +180,16 @@ void setup()
 
 void loop() 
 {
+  //testBtInput();
   checkShowIpBt();
   
   setDisplayText();                             // Contains a check for message cancel button
   
   displayText(_text);
 
+  if (_wifiAvailable) {
+    webMessage();
+  }
+  
   checkBtLock();
 }
