@@ -82,38 +82,3 @@ void saveTime(int d, int mo, int yr, int hr, int m, int s)
     
   RTC.write(timeStamp);                   // Then write it to the clock
 }
-
-/*
- * Set the display text (excluding message).
- * Checks if message is active or not, 
- * if not checks and sets text to IP or current time.
- */
-void setDisplayText() 
-{
-  tmElements_t timeStamp;                 // Create a variable to hold the data 
-  timeStamp = GetTime();                  // Get the time
-  
-  if (_msgActive == true) { 
-    if (timeStamp.Hour >= _msgTimeoutNextHr && timeStamp.Minute >= _msgTimeoutNextMin) {
-      cancelMessage();
-      if (DEBUG) { Serial.println("Message canceled by timeout"); }
-    } else {
-      checkMsgCancelBt();
-    }
-  } else if (_showIpActive == true) {
-    String ipStr = " _ " + String(_ip[0]) + '.' + String(_ip[1]) + '.' + String(_ip[2]) + '.' + String(_ip[3]);
-    if (DEBUG) { Serial.print("IP displayed - "); Serial.println(ipStr);}
-    strcpy(_text, ipStr.c_str());
-    _length=strlen(_text);
-  } else {
-    String tHr = String(timeStamp.Hour);
-    String tMin = String(timeStamp.Minute);
-    if (timeStamp.Hour < 10) { tHr = "0" + String(timeStamp.Hour); }
-    if (timeStamp.Minute < 10) { tMin = "0" + String(timeStamp.Minute); }
-    //String timeString = String(timeStamp.Hour) + ":" + String(timeStamp.Minute) + ":" + String(timeStamp.Second);
-    String timeString = tHr + ":" + tMin;
-    strcpy(_text, timeString.c_str());
-    _length=strlen(_text);
-  }
-
-}
