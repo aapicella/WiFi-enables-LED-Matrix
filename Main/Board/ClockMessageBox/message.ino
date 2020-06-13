@@ -6,6 +6,7 @@
 void receiveMessage(String message)
 {
   // Copy received message to _text
+  message += "    ";
   strcpy(_text, message.c_str());
   _length=strlen(_text);
 

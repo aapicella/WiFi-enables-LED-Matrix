@@ -46,8 +46,8 @@
 
 /*----------------------------system----------------------------*/
 const String _progName = "ClockMessageBox";
-const String _progVers = "0.91";          // Implement Async Web Server
-#define DEBUG 1                           // 0 or 1 - remove later
+const String _progVers = "0.92";          // Adjust message
+#define DEBUG 0                           // 0 or 1 - remove later
 #define DEBUG_WIFI 0                      // 0 or 1 - remove later
 #define DEBUG_DISPLAY 0                   // 0 or 1 - remove later
 #define DEBUG_TIME 0                      // 0 or 1 - remove later
